@@ -1,37 +1,66 @@
 include config
 
-all:
-	cd src; $(MAKE) $@
+# Tools
+MKDIR = mkdir -p
+ifneq (,$(findstring Msys, $(SYSTEM)))
+  INSTALL = c:/msys/1.0/bin/install.exe -p
+  GIT =  c:/msysgit/msysgit/bin/git.exe
+  GZIP = c:/msysgit/msysgit/bin/gzip.exe
+else
+  INSTALL = install.exe -p
+  GIT =  git
+  GZIP = gzip
+endif
+INSTALL_EXEC = $(INSTALL) -m 0755 
+INSTALL_DATA = $(INSTALL) -m 0644
+RM = rm -rf
 
-clean depend:
-	cd src; $(MAKE) $@
+# Build
+.PHONY: all
+all:
+	cd src && $(MAKE) $@
+
+# Clean
+.PHONY: clean uclean
+clean:
+	cd src && $(MAKE) $@
 
 uclean: clean
-	rm -f `find . -name "*~"`
-	rm -f out.*
+	cd src && $(MAKE) $@
+	$(RM) `find . -name "*~"` out.* 
 
+# Install Uninstall
+.PHONY: install uninstall
 install: all
-	cd src; mkdir -p $(INSTALL_LIB)
-	cd src; cp $(TARGET_SO) $(INSTALL_LIB)
+	cd src && $(MKDIR) $(INSTALL_LIB)
+	cd src && $(INSTALL_EXEC) $(TARGET_SO) $(INSTALL_LIB)
 
 uninstall:
-	rm $(INSTALL_LIB)/$(TARGET_SO)
+	cd $(INSTALL_LIB) && $(RM) $(TARGET_SO)
 
+# Test
+.PHONY: test testd
 test:
+ifneq (, $(findstring Msys, $(SYSTEM)))
+	@echo "Msys only:"
+	@echo "Test this module in an interactive command shell using: lua test/test.lua"
+else	
 	$(LUABIN) $(TESTLUA)
-
+endif
 testd:
 	$(LUABIN) $(TESTLUA) DEBUG
 
-cvsdist::
-	mkdir -p $(EXPORTDIR)/$(DISTNAME)
-	cvs export -r latest -d $(EXPORTDIR)/$(DISTNAME) $(CVSMODULE)
-	cd $(EXPORTDIR); tar -cvzf $(DISTNAME).tar.gz $(DISTNAME)/*
-	rm -rf $(EXPORTDIR)/$(DISTNAME)
-
+# Distribute
+.PHONY: dist sys
 dist::
-	svn export $(REPOSITORY)/$(SVNMODULE) $(EXPORTDIR)/$(DISTNAME)
-	cd $(EXPORTDIR); tar -cvzf $(DISTARCH) $(DISTNAME)/*
-	rm -rf $(EXPORTDIR)/$(DISTNAME)
+	$(MKDIR) $(EXPORTDIR)
+ifeq (, $(findstring Msys, $(SYSTEM)))
+	$(GIT) archive --format=tar --prefix=$(DISTNAME)/ HEAD | $(GZIP) >$(EXPORTDIR)/$(DISTARCH)	
+else
+	$(GIT) archive --format=zip --prefix=$(DISTNAME)/ HEAD > $(EXPORTDIR)/$(DISTARCH)	
+endif
 
-.PHONY: all tag cvsdist dist test testd depend clean uclean install uninstall
+sys:
+	@echo "system is: $(SYSTEM)"
+	
+.PHONY: all tag cvsdist dist test testd depend clean uclean install uninstall sys
