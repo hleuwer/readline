@@ -1,77 +1,111 @@
 # Module name
 MODULE = readline
-
-# Current Version 
-VERSION=1.0.1
+VERSION = 1.0
 
 # Objects
-OBJS = lreadline.o
+OBJECTS := lreadline.o
 
-# System: expands to Msys, Cygwin or GNU/Linux
-SYSTEM = $(shell uname -o)
+# Libraries
+LIBRARIES := readline history
 
-# Lua Version to use:
-LV = 5.1
-LX = 51
+# Headers
+HEADERS := "c:\usr\include"
+
+# Lua scripts
+LUAS :=
+ 
+# Documentation
+DOCUMENTS :=
 
 # ====================================================== 
 # You probably do not need to change anything below 
-#
 
-# Lua Installation path
+# Your system. Expands to 'GNU/Linux', 'Cygwin' or 'Msys'
+SYSTEM = $(shell uname -o)
+
+# Lua Settings
+# - Lua development headers and libraries
 ifneq (, $(findstring Msys, $(SYSTEM)))
-  LUA = c:/usr/local
+  LUA="c:\Program Files (x86)\Lua\5.1"
+  LUABIN="c:\Program Files (x86)\Lua\5.1\lua.exe"
+  LUADOC = $(LUABIN) "c:\Program Files (x86)\Lua\5.1\lua\luadoc_start.lua"
 else
-  LUA = /usr/local
+  LUADOC = luadoc
+  ifneq (, $(findstring Linux, $(SYSTEM)))
+    LUA = /usr
+  else
+    LUA=/usr/local
+  endif
+  LUABIN=$(LUA)/lua
 endif
-
-# Root of Lua Installation
-ifneq (, $(findstring Msys, $(SYSTEM)))
-  INSTALL_ROOT=c:/usr/local
-else
-  INSTALL_ROOT=/usr/local
-endif
-INSTALL_SHARE=$(INSTALL_ROOT)/share/lua/$(LV)
-INSTALL_LIB=$(INSTALL_ROOT)/lib/lua/$(LV)
-
-# Lua specifics
-LUAINC=$(LUA)/include
-LUABIN=$(LUA)/bin/lua
-LUALIB=$(LUA)/lib
-TESTLUA=test/test.lua
-
-# Platform specific differences
-ifneq (, $(finstring Linux, $(SYSTEM)))
-  X := so
-  LIBS=
-else
-  X := dll
-  LIBS=-llua$(LX)
-endif
-
-# Targets
-TARGET_SO=$(MODULE).$X
-
-# Compiler and Linker
-ifneq (, $(findstring Msys, $(SYSTEM)))
-  SYSINC = c:/usr/include
-else
-  SYSINC = /usr/include
-endif
-DEF=-DCOMPATH_H -DVERSION='"$(VERSION)"'
-CC=gcc
-CFLAGS=-I$(LUAINC) -I$(SYSINC) $(DEF) -Wall -O2 -fPIC
-#CFLAGS=-I$(LUAINC) -I$(SYSINC) $(DEF) -Wall -ggdb
-LD=gcc
-LDFLAGS= -O2 -shared -fPIC
-LIBS+= -lreadline -lhistory
+# - Lua version to use
+LV:=5.1
+LX:=51
 
 # Distribution stuff
 DISTNAME=$(MODULE)-$(VERSION)
 ifneq (, $(findstring Msys, $(SYSTEM)))
-  EXPORTDIR=m:/exports
+  EXPORTDIR=m:/myexports
   DISTARCH=$(DISTNAME).zip
 else
   EXPORTDIR=$(HOME)/exports
   DISTARCH=$(DISTNAME).tar.gz
 endif
+
+# Installation Directories
+INSTALL_ROOT=/usr/local
+INSTALL_SHARE=$(INSTALL_ROOT)/share/lua/$(LV)
+INSTALL_LIB=$(INSTALL_ROOT)/lib/lua/$(LV)
+INSTALL_DOC=$(INSTALL_ROOT)/share/doc
+
+# Installation tools
+INSTALL = install.exe -p
+INSTALL_EXEC = $(INSTALL) -m 0755 
+INSTALL_DATA = $(INSTALL) -m 0644
+MKDIR = mkdir -p
+RM = rm -rf
+RMTEMP = find . -name "*~" | xargs $(RM)
+ifneq (,$(findstring Msys, $(SYSTEM)))
+  GIT =  c:/msysgit/msysgit/bin/git.exe
+else
+  GIT =  git
+endif
+GZIP = gzip
+
+# Compat-5.1 location
+COMPAT=compat-5.1r5
+
+# Lua specifics
+DEFCOMPAT=-DCOMPAT_H
+LUAINC=$(LUA)/include
+LUALIB=$(LUA)/lib
+
+# Platform specific differences
+ifneq (, $(findstring Linux, $(SYSTEM)))
+  # Linux: need not to link againt Lua libraries
+  SOEXT := so
+  LIBS+=
+  PIC :=-fPIC
+else
+  # Cygwin/Mingw: need to link against Lua libraries
+  SOEXT := dll
+  LIBS+=-llua$(LX)
+  PIC :=
+endif
+
+# Set default build type
+BUILD ?= "./Release"
+
+# Compiler and Linker
+DEF=$(DEFCOMPAT) -DVERSION='"$(VERSION)"'
+CC=gcc
+LD=gcc
+ifneq (, $(findstring Release, $(BUILD)))
+  OPT := -O2
+else
+  OPT := -g
+endif
+WARN := -pedantic -Wall
+CFLAGS=-I$(LUAINC) -I$(COMPAT) $(DEF) $(WARN) $(OPT) $(PIC)
+LDFLAGS=$(OPT) -shared -L$(LUALIB)
+

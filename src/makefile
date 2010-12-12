@@ -1,19 +1,27 @@
 include ../config
 
-all: $(TARGET_SO)
+TOP = ..
+TARGET = $(TOP)/$(BUILD)/$(MODULE).$(SOEXT)
+OBJS = $(addprefix $(TOP)/$(BUILD)/, $(OBJECTS))
+LIBS += $(addprefix -l, $(LIBRARIES))
+HDRS += $(addprefix -I, $(HEADERS))
 
-$(TARGET_SO): $(OBJS)
-	$(LD) $(LDFLAGS) -o $@ $^ $(LIBS)
+all: $(TOP)/$(BUILD) $(TARGET)
 
-SUFFIXES: .c .o .d
-.c.o:
-	$(CC) -MMD -c $(CFLAGS) -o $@ $<
+$(TARGET): $(OBJS)
+	$(LD) $(LDFLAGS) -o $@ $< $(LIBS)
+
+$(TOP)/$(BUILD)/%.o: $(TOP)/src/%.c
+	$(CC) -MMD -MF $(@:.o=.d) -c $(HDRS) $(CFLAGS) -o$@ $<
+
+$(TOP)/$(BUILD):
+	$(MKDIR) $(TOP)/$(BUILD)
 
 .PHONY: clean uclean
 clean:
-	$(RM) $(OBJS) $(TARGET_SO) 
+	$(RM) $(OBJS) $(TOP)/$(MODULE) $(TARGET) 
 
 uclean: clean
-	$(RM) $(OBJS:.o=.d)
-	
+	$(RM) $(TOP)/$(BUILD)
+
 -include $(OBJS:.o=.d)
