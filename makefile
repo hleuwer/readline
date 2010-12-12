@@ -17,13 +17,12 @@ uninstall:
 	cd $(INSTALL_LIB) && $(RM) $(MODULE).$(SOEXT)
 
 test testd:
-	/usr/local/bin/lua test/test.lua &
 ifneq (, $(findstring Msys, $(SYSTEM)))
 	@echo "Have to learn how to launch an interactive console in eclipse. Sorry."
 else
 	lua test/test.lua
 endif
-	
+
 doc::
 	@echo "Nothing to do!"
 
