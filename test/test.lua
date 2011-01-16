@@ -10,7 +10,7 @@ while cmd ~= "exit" do
       rl.clearhistory()
    elseif cmd == "exit" then
    	  print("command exit: leaving.")
-   	  os.exit(1)
+   	  os.exit(0)
    else
 	  print(cmd)
       rl.addhistory(cmd)
