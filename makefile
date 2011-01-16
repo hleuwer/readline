@@ -18,7 +18,9 @@ uninstall:
 
 test testd:
 ifneq (, $(findstring Msys, $(SYSTEM)))
-	@echo "Have to learn how to launch an interactive console in eclipse. Sorry."
+	@echo "Note: Test does not work properly with eclipse built-in console!"
+	@echo "      If Lua hangs in background stop it in Progress tab."
+	c:\msys\1.0\local\bin\lua.exe test\test.lua
 else
 	lua test/test.lua
 endif
@@ -39,5 +41,6 @@ endif
 
 sys:
 	@echo "system is: $(SYSTEM)"
+	@echo "shell is: $(SHELL)"
 
 .PHONY: all dist test testd clean uclean install uninstall dist sys
