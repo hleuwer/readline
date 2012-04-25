@@ -53,7 +53,11 @@ else
 endif
 
 # Installation Directories
-INSTALL_ROOT=/usr/local
+ifneq (, $(findstring Msys, $(SYSTEM)))
+  INSTALL_ROOT=c:/usr/local
+else
+  INSTALL_ROOT=/usr/local
+endif
 INSTALL_SHARE=$(INSTALL_ROOT)/share/lua/$(LV)
 INSTALL_LIB=$(INSTALL_ROOT)/lib/lua/$(LV)
 INSTALL_DOC=$(INSTALL_ROOT)/share/doc
