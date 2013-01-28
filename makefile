@@ -18,9 +18,11 @@ uninstall:
 
 test testd:
 ifneq (, $(findstring Msys, $(SYSTEM)))
-	@echo "Note: Test does not work properly with eclipse built-in console!"
-	@echo "      If Lua hangs in background stop it in Progress tab."
-	c:\msys\1.0\local\bin\lua.exe test\test.lua
+ifneq (, $(findstring yes, $(ECLIPSE)))
+	@echo "Note: Test does not work properly with eclipse built-in console - aborted!"
+else
+	c:\Lua\5.1\lua.exe test\test.lua
+endif
 else
 	lua test/test.lua
 endif

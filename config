@@ -30,9 +30,9 @@ DOCUMENTS :=
 # Lua Settings
 # - Lua development headers and libraries
 ifneq (, $(findstring Msys, $(SYSTEM)))
-  LUA="c:\Program Files (x86)\Lua\5.1"
-  LUABIN="c:\Program Files (x86)\Lua\5.1\lua.exe"
-  LUADOC = $(LUABIN) "c:\Program Files (x86)\Lua\5.1\lua\luadoc_start.lua"
+  LUA="c:\Lua\5.1"
+  LUABIN="c:\Lua\5.1\lua.exe"
+  LUADOC = $(LUABIN) "c:\Lua\5.1\lua\luadoc_start.lua"
 else
   LUADOC = luadoc
   ifneq (, $(findstring Linux, $(SYSTEM)))
@@ -57,7 +57,11 @@ else
 endif
 
 # Installation Directories
-INSTALL_ROOT=/usr/local
+ifneq (, $(findstring Msys, $(SYSTEM)))
+  INSTALL_ROOT=c:/usr/local
+else
+  INSTALL_ROOT=/usr/local
+endif
 INSTALL_SHARE=$(INSTALL_ROOT)/share/lua/$(LV)
 INSTALL_LIB=$(INSTALL_ROOT)/lib/lua/$(LV)
 INSTALL_DOC=$(INSTALL_ROOT)/share/doc
@@ -102,6 +106,7 @@ else
   # Cygwin/Mingw: need to link against Lua libraries
   SOEXT := dll
   LIBS+=-llua$(LX)
+  LIBDIR+=c:/usr/lib
   PIC :=
 endif
 
@@ -119,5 +124,5 @@ else
 endif
 WARN := -pedantic -Wall
 CFLAGS=-I$(LUAINC) -I$(COMPAT) $(DEF) $(WARN) $(OPT) $(PIC)
-LDFLAGS=$(OPT) -shared -L$(LUALIB)
+LDFLAGS=$(OPT) -shared -L$(LUALIB) -L$(LIBDIR)
 
