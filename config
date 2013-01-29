@@ -1,5 +1,5 @@
 # Your system. Expands to 'GNU/Linux', 'Cygwin' or 'Msys'
-SYSTEM = $(shell uname -s)
+SYSTEM = $(shell uname -o)
 
 # Module name
 MODULE = readline
