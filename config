@@ -11,13 +11,6 @@ OBJECTS := lreadline.o
 # Libraries
 LIBRARIES := readline history
 
-# Headers
-ifneq (, $(findstring Msys, $(SYSTEM)))
-  HEADERS := "c:\usr\include"
-else
-  HEADERS := /usr/include
-endif
-
 # Lua scripts
 LUAS :=
  
@@ -30,9 +23,9 @@ DOCUMENTS :=
 # Lua Settings
 # - Lua development headers and libraries
 ifneq (, $(findstring Msys, $(SYSTEM)))
-  LUA="c:\Lua\5.1"
+  LUA=c:\Lua\5.1
   LUABIN="c:\Lua\5.1\lua.exe"
-  LUADOC = $(LUABIN) "c:\Lua\5.1\lua\luadoc_start.lua"
+  LUADOC = $(LUABIN) c:\Lua\5.1\lua\luadoc_start.lua
 else
   LUADOC = luadoc
   ifneq (, $(findstring Linux, $(SYSTEM)))
@@ -90,11 +83,16 @@ COMPAT=compat-5.1r5
 # Lua specifics
 DEFCOMPAT=-DCOMPAT_H
 ifneq (, $(findstring Linux, $(SYSTEM)))
-  LUAINC=$(LUA)/include/lua5.1
-  LUALIB=$(LUA)/lib_64
+  LUAINC=-L$(LUA)/include/lua5.1
+  LUALIB=-L$(LUA)/lib_64
 else
-  LUAINC=$(LUA)/include
-  LUALIB=$(LUA)/lib
+  ifneq (, $(findstring Msys, $(SYSTEM)))
+    LUAINC=-I$(LUA)\include
+    LUALIB=-L$(LUA)\lib
+  else
+    LUAINC=-I$(LUA)/include
+    LUALIB=-L$(LUA)/lib
+  endif
 endif
 # Platform specific differences
 ifneq (, $(findstring Linux, $(SYSTEM)))
@@ -106,12 +104,13 @@ else
   # Cygwin/Mingw: need to link against Lua libraries
   SOEXT := dll
   LIBS+=-llua$(LX)
-  LIBDIR+=c:/usr/lib
+  LIBDIR+=-Lc:/usr/lib
+  INCDIR+=-Ic:/usr/include
   PIC :=
 endif
 
 # Set default build type
-BUILD ?= "./Release"
+BUILD ?= ./Release
 
 # Compiler and Linker
 DEF=$(DEFCOMPAT) -DVERSION='"$(VERSION)"'
@@ -123,6 +122,6 @@ else
   OPT := -g
 endif
 WARN := -pedantic -Wall
-CFLAGS=-I$(LUAINC) -I$(COMPAT) $(DEF) $(WARN) $(OPT) $(PIC)
-LDFLAGS=$(OPT) -shared -L$(LUALIB) -L$(LIBDIR)
+CFLAGS=$(LUAINC) $(INCDIR) -I$(COMPAT) $(DEF) $(WARN) $(OPT) $(PIC)
+LDFLAGS=$(OPT) -shared $(LUALIB) $(LIBDIR)
 
