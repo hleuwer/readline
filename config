@@ -102,11 +102,19 @@ ifneq (, $(findstring Linux, $(SYSTEM)))
   PIC :=-fPIC
 else
   # Cygwin/Mingw: need to link against Lua libraries
-  SOEXT := dll
-  LIBS+=-llua$(LX)
-  LIBDIR+=-Lc:/usr/lib
-  INCDIR+=-Ic:/usr/include
-  PIC :=
+  ifneq (, $(findstring Msys, %(SYSTEM)))
+    SOEXT := dll
+    LIBS+=-llua$(LV)
+    LIBDIR+=-Lc:/usr/lib
+    INCDIR+=-Ic:/usr/include
+    PIC :=
+  else
+    SOEXT := dll
+    LIBS+=-llua$(LX)
+    LIBDIR+=-Lc:/usr/lib
+    INCDIR+=-Ic:/usr/include
+    PIC :=
+  endif
 endif
 
 # Set default build type
