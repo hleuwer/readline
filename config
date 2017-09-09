@@ -93,7 +93,7 @@ COMPAT=compat-5.1r5
 DEFCOMPAT=-DCOMPAT_H
 ifneq (, $(findstring Linux, $(SYSTEM)))
   ifneq (, $(findstring Darwin, $(SUBSYSTEM)))
-    LUAINC=-I$(LUA)/include
+    LUAINC=-I$(LUA)/include/lua/$(LV)
     LUALIB=-L$(LUA)/lib -L/usr/local/lib
   else
     LUAINC=-I$(LUA)/include/lua5.1
@@ -113,7 +113,7 @@ ifneq (, $(findstring Linux, $(SYSTEM)))
   ifneq (, $(findstring Darwin, $(SUBSYSTEM)))
     # Linux: need not to link againt Lua libraries
     SOEXT := so
-    LIBS+= -llua
+    LIBS+= -llua$(LX)
     PIC :=-fPIC
     LIBDIR+=-L/opt/local/lib
     INCDIR+=-I/opt/local/include 
