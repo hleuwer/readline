@@ -28,7 +28,12 @@ static int rl_clearhistory(lua_State *L)
    clear_history();
    return 0;
 }
+
+#if LUA_VERSION_NUM > 501
+static const luaL_Reg funcs[] = {
+#else
 static const luaL_reg funcs[] = {
+#endif
    {"readline", rl_readline},
    {"add_history", rl_addhistory},
    {"clear_history", rl_clearhistory},
@@ -39,10 +44,16 @@ static const luaL_reg funcs[] = {
 
 LUALIB_API int luaopen_readline(lua_State *L)
 {
+#if LUA_VERSION_NUM > 501
+  luaL_newlib(L, funcs);     /* mt */
+  lua_pushvalue(L, -1);      /* mt, mt */
+  lua_setglobal(L, MYNAME);  /* mt */
+#else
    luaL_openlib(L, MYNAME, funcs, 0);
-   lua_pushliteral(L, "version");
-   lua_pushliteral(L, MYVERSION);
-   lua_rawset(L, -3);
+#endif
+   lua_pushliteral(L, "version");  /* mt, 'version' */
+   lua_pushliteral(L, MYVERSION);  /* mt, 'version', VERS */
+   lua_rawset(L, -3);              /* mt */
    lua_pushliteral(L, "_VERSION");
    lua_pushliteral(L, MYVERSION);
    lua_rawset(L, -3);

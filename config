@@ -27,26 +27,27 @@ DOCUMENTS :=
 # You probably do not need to change anything below 
 
 # Lua Settings
+# - Lua version to use
+LV:=5.2
+LX:=52
+
 # - Lua development headers and libraries
 ifneq (, $(findstring Msys, $(SYSTEM)))
-  LUA=c:\Lua\5.1
-  LUABIN="c:\Lua\5.1\lua.exe"
-  LUADOC = $(LUABIN) c:\Lua\5.1\lua\luadoc_start.lua
+  LUA=c:\Lua\$(LV)
+  LUABIN=c:\Lua\$(LV)\lua.exe
+  LUADOC = $(LUABIN) c:\Lua\$(LV)\lua\luadoc_start.lua
 else
   LUADOC = luadoc
   ifneq (, $(findstring Linux, $(SYSTEM)))
     ifneq (, $(findstring Darwin, $(SUBSYSTEM)))
       LUA=/usr/local
+      LUABIN=$(LUA)/bin/lua$(LX)
     else
       LUA = /usr
+      LUABIN=$(LUA)/lua
     endif
-    LUA=/usr/local
   endif
-  LUABIN=$(LUA)/lua
 endif
-# - Lua version to use
-LV:=5.1
-LX:=51
 
 # Distribution stuff
 DISTNAME=$(MODULE)-$(VERSION)
@@ -108,20 +109,23 @@ else
     LUALIB=-L$(LUA)/lib
   endif
 endif
+
 # Platform specific differences
 ifneq (, $(findstring Linux, $(SYSTEM)))
   ifneq (, $(findstring Darwin, $(SUBSYSTEM)))
     # Linux: need not to link againt Lua libraries
     SOEXT := so
-    LIBS+= -llua$(LX)
+#    LIBS+= -llua$(LX)
     PIC :=-fPIC
     LIBDIR+=-L/opt/local/lib
     INCDIR+=-I/opt/local/include 
+    LDFLAGS=$(OPT) -bundle -undefined dynamic_lookup $(LUALIB) $(LIBDIR)
   else
     # Linux: need not to link againt Lua libraries
     SOEXT := so
     LIBS+=
     PIC :=-fPIC
+    LDFLAGS=$(OPT) -shared $(LUALIB) $(LIBDIR)
   endif
 else
   # Cygwin/Mingw: need to link against Lua libraries
@@ -138,6 +142,7 @@ else
     INCDIR+=-Ic:/usr/include
     PIC :=
   endif
+  LDFLAGS=$(OPT) -shared $(LUALIB) $(LIBDIR)
 endif
 
 # Set default build type
@@ -154,5 +159,4 @@ else
 endif
 WARN := -pedantic -Wall
 CFLAGS=$(LUAINC) $(INCDIR) -I$(COMPAT) $(DEF) $(WARN) $(OPT) $(PIC)
-LDFLAGS=$(OPT) -shared $(LUALIB) $(LIBDIR)
 
