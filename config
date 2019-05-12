@@ -44,8 +44,10 @@ else
       LUABIN=$(LUA)/bin/lua$(LX)
     else
       LUA = /usr
-      LUABIN=$(LUA)/lua
+      LUABIN=$(LUA)/bin/lua
     endif
+  else
+    LUA=/usr/local
   endif
 endif
 
@@ -95,7 +97,7 @@ DEFCOMPAT=-DCOMPAT_H
 ifneq (, $(findstring Linux, $(SYSTEM)))
   ifneq (, $(findstring Darwin, $(SUBSYSTEM)))
     LUAINC=-I$(LUA)/include/lua/$(LV)
-    LUALIB=-L$(LUA)/lib -L/usr/local/lib
+    LUALIB=-L$(LUA)/lib
   else
     LUAINC=-I$(LUA)/include/lua5.1
     LUALIB=-L$(LUA)/lib_64
@@ -115,7 +117,6 @@ ifneq (, $(findstring Linux, $(SYSTEM)))
   ifneq (, $(findstring Darwin, $(SUBSYSTEM)))
     # Linux: need not to link againt Lua libraries
     SOEXT := so
-#    LIBS+= -llua$(LX)
     PIC :=-fPIC
     LIBDIR+=-L/opt/local/lib
     INCDIR+=-I/opt/local/include 
