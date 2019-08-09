@@ -41,7 +41,6 @@ static const luaL_reg funcs[] = {
    {"clearhistory", rl_clearhistory},
    {NULL, NULL}
 };
-
 LUALIB_API int luaopen_readline(lua_State *L)
 {
 #if LUA_VERSION_NUM > 501

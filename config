@@ -33,9 +33,9 @@ LX:=52
 
 # - Lua development headers and libraries
 ifneq (, $(findstring Msys, $(SYSTEM)))
-  LUA=c:\Lua\$(LV)
-  LUABIN=c:\Lua\$(LV)\lua.exe
-  LUADOC = $(LUABIN) c:\Lua\$(LV)\lua\luadoc_start.lua
+  LUA=/c/usr/local
+  LUABIN=$(LUA)/bin/lua$(LX).exe
+  LUADOC = ldoc
 else
   LUADOC = luadoc
   ifneq (, $(findstring Linux, $(SYSTEM)))
@@ -104,8 +104,8 @@ ifneq (, $(findstring Linux, $(SYSTEM)))
   endif
 else
   ifneq (, $(findstring Msys, $(SYSTEM)))
-    LUAINC=-I$(LUA)\include
-    LUALIB=-L$(LUA)\lib
+    LUAINC=-I$(LUA)/include/
+    LUALIB=-L$(LUA)/lib
   else
     LUAINC=-I$(LUA)/include
     LUALIB=-L$(LUA)/lib
@@ -126,24 +126,25 @@ ifneq (, $(findstring Linux, $(SYSTEM)))
     SOEXT := so
     LIBS+=
     PIC :=-fPIC
-    LDFLAGS=$(OPT) -shared $(LUALIB) $(LIBDIR)
-  endif
+    LDFLAGS=$(OPT) -shared $(LUALIB)$(LIBDIR)
+  endif 
 else
   # Cygwin/Mingw: need to link against Lua libraries
   ifneq (, $(findstring Msys, %(SYSTEM)))
     SOEXT := dll
-    LIBS+=-llua$(LV)
-    LIBDIR+=-Lc:/usr/lib
-    INCDIR+=-Ic:/usr/include
+    LIBS+=-llua$(LX)
+    LIBDIR+=-L/c/usr/lib
+    INCDIR+=-I/c/usr/include
     PIC :=
   else
     SOEXT := dll
     LIBS+=-llua$(LX)
-    LIBDIR+=-Lc:/usr/lib
-    INCDIR+=-Ic:/usr/include
+    LIBDIR+=-L/mingw32/lib
+    INCDIR+=-I/mingw32/include
     PIC :=
   endif
-  LDFLAGS=$(OPT) -shared $(LUALIB) $(LIBDIR)
+  CFLAGS=-mwin32
+  LDFLAGS=$(OPT) -mwin32 -shared $(LUALIB) $(LIBDIR)
 endif
 
 # Set default build type
@@ -159,5 +160,5 @@ else
   OPT := -g
 endif
 WARN := -pedantic -Wall
-CFLAGS=$(LUAINC) $(INCDIR) -I$(COMPAT) $(DEF) $(WARN) $(OPT) $(PIC)
+CFLAGS+=$(LUAINC) $(INCDIR) -I$(COMPAT) $(DEF) $(WARN) $(OPT) $(PIC)
 
