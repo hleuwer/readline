@@ -139,8 +139,8 @@ else
   else
     SOEXT := dll
     LIBS+=-llua$(LX)
-    LIBDIR+=-L/mingw32/lib
-    INCDIR+=-I/mingw32/include
+    LIBDIR+=-L/mingw64/lib
+    INCDIR+=-I/usr/include -I/mingw64/include
     PIC :=
   endif
   CFLAGS=-mwin32
